@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAFIZ AI - MARI BELAJAR BARENG</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg: #050b17;
+            --bg-2: #0f172a;
+            --panel: rgba(15, 23, 42, 0.76);
+            --panel-strong: rgba(15, 23, 42, 0.92);
+            --line: rgba(125, 211, 252, 0.32);
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #67e8f9;
+            --cyan: #67e8f9;
+            --accent-2: #a78bfa;
+            --gold: #fbbf24;
+            --orange: #f97316;
+            --green: #34d399;
+            --red: #fb7185;
+            --shadow: rgba(103, 232, 249, 0.2);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background:
+                radial-gradient(circle at 50% 35%, rgba(167, 139, 250, 0.18), transparent 25%),
+                radial-gradient(circle at 20% 15%, rgba(103, 232, 249, 0.14), transparent 28%),
+                radial-gradient(circle at 80% 25%, rgba(251, 191, 36, 0.1), transparent 22%),
+                linear-gradient(135deg, #010b17 0%, #051423 20%, #071b2d 45%, #040d1b 100%);
+            color: var(--text);
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            letter-spacing: 0.04em;
+        }
+
+        #boot-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background:
+                radial-gradient(circle at center, rgba(103, 232, 249, 0.10), transparent 30%),
+                linear-gradient(180deg, rgba(2, 6, 23, 0.98), rgba(3, 11, 18, 0.96));
+            z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; transition: opacity 0.6s ease, visibility 0.6s ease;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+        #boot-screen::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(103, 232, 249, 0.06), transparent 32%, rgba(103, 232, 249, 0.04));
+            pointer-events: none;
+        }
+        #boot-screen h1 {
+            position: relative;
+            z-index: 1;
+            font-size: clamp(2.2rem, 3vw, 4.4rem);
+            letter-spacing: 0.4em;
+            color: var(--accent);
+            animation: pulse-text 2s infinite;
+            text-align: center;
+            padding: 0 20px;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            text-shadow: 0 0 22px rgba(103, 232, 249, 0.8), 0 0 45px rgba(103, 232, 249, 0.42);
+            margin-bottom: 18px;
+        }
+        #boot-screen p {
+            position: relative;
+            z-index: 1;
+            margin-top: 14px;
+            opacity: 0.9;
+            text-align: center;
+            color: var(--gold);
+            font-size: 0.9rem;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+        }
+        @keyframes pulse-text {
+            0%, 100% { opacity: 1; text-shadow: 0 0 18px rgba(103, 232, 249, 0.9), 0 0 40px rgba(103, 232, 249, 0.55), 0 0 72px rgba(167, 139, 250, 0.4); }
+            50% { opacity: 0.5; text-shadow: 0 0 10px rgba(103, 232, 249, 0.55), 0 0 22px rgba(167, 139, 250, 0.35); }
+        }
+
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 52%, rgba(255,255,255,0.04) 52%, rgba(255,255,255,0.04));
+            background-size: 100% 5px; pointer-events: none; z-index: 100;
+            opacity: 0.5;
+        }
+
+        .hud-container {
+            width: min(1440px, 100%);
+            height: 100vh;
+            position: relative;
+            margin: 0 auto;
+            padding: 32px 26px 180px;
+        }
+
+        .hud-container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(103, 232, 249, 0.04), rgba(103, 232, 249, 0));
+            pointer-events: none;
+        }
+
+        .panel {
+            background: linear-gradient(180deg, rgba(12, 20, 34, 0.84), rgba(15, 23, 42, 0.72));
+            border: 1px solid rgba(103, 232, 249, 0.34);
+            border-radius: 22px;
+            padding: 18px 18px 16px;
+            position: absolute;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 14px 36px rgba(2, 6, 23, 0.62), inset 0 0 0 1px rgba(255,255,255,0.04), 0 0 0 1px rgba(103,232,249,0.08), 0 0 24px rgba(103,232,249,0.08);
+        }
+
+        .panel-left {
+            top: 28px; left: 26px; width: min(330px, 26vw);
+        }
+
+        .panel-right {
+            top: 28px; right: 26px; width: min(330px, 26vw); text-align: right;
+        }
+
+        @media (max-width: 992px) {
+            .panel-left, .panel-right {
+                width: min(300px, 38vw);
+            }
+            .jarvis-core-container {
+                transform: translate(-50%, -45%) scale(0.9);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hud-container { padding: 20px 14px 150px; }
+            .panel-left, .panel-right {
+                width: calc(50% - 18px);
+                padding: 12px 10px;
+                font-size: 0.72em;
+            }
+            .panel-left { top: 12px; left: 12px; }
+            .panel-right { top: 12px; right: 12px; }
+            .jarvis-core-container {
+                transform: translate(-50%, -48%) scale(0.82);
+            }
+        }
+
+        .panel-title {
+            font-size: 0.9rem;
+            letter-spacing: 0.28em;
+            margin-bottom: 14px;
+            border-bottom: 1px solid rgba(103, 232, 249, 0.32);
+            padding-bottom: 8px;
+            color: var(--accent);
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            text-shadow: 0 0 16px rgba(103, 232, 249, 0.5);
+        }
+
+        .data-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; font-size: 0.8rem; opacity: 0.96;
+            gap: 12px;
+        }
+
+        .data-row span:first-child {
+            color: rgba(226, 232, 240, 0.8);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .jarvis-core-container {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -44%);
+            width: min(560px, 52vw); height: min(560px, 52vw);
+            display: flex; justify-content: center; align-items: center;
+            perspective: 1000px;
+            filter: drop-shadow(0 0 28px rgba(103, 232, 249, 0.18));
+        }
+
+        .solar-flare-cloud {
+            position: absolute; width: 100%; height: 100%;
+            transform-style: preserve-3d;
+            animation: spin-cloud 24s linear infinite;
+            z-index: 15;
+        }
+
+        .solar-particle {
+            position: absolute; top: 50%; left: 50%;
+            width: 6px; height: 6px; border-radius: 50%;
+            background: rgba(251, 191, 36, 0.9);
+            box-shadow: 0 0 8px rgba(249, 115, 22, 0.8), 0 0 18px rgba(167, 139, 250, 0.7);
+            transition: transform 0.1s ease-out, background 0.3s;
+        }
+
+        .core-orb {
+            width: 230px; height: 230px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff8d6 0%, #fbbf24 22%, #f59e0b 42%, #f97316 60%, rgba(249,115,22,0.8) 74%, rgba(2,6,23,0) 100%);
+            box-shadow: 0 0 55px rgba(249, 115, 22, 0.82), 0 0 110px rgba(167, 139, 250, 0.54), inset 0 0 35px rgba(255,255,255,0.8);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 20; transition: transform 0.15s ease;
+            animation: solar-pulse 3s ease-in-out infinite alternate;
+            border: 1px solid rgba(255,255,255,0.28);
+        }
+
+        .core-text {
+            position: relative;
+            z-index: 25;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: #f8fafc;
+            text-shadow: 0 0 18px rgba(251, 191, 36, 0.9), 0 0 32px rgba(103, 232, 249, 0.8);
+            letter-spacing: 0.18em;
+            font-size: 1.9rem;
+            text-transform: uppercase;
+        }
+
+        .core-text .brand {
+            display: block;
+            line-height: 1;
+            transform: translateX(0.12em);
+        }
+
+        .core-text .sigil {
+            display: block;
+            font-size: 0.8rem;
+            letter-spacing: 0.5em;
+            opacity: 0.95;
+            line-height: 1;
+            transform: translateX(0.24em);
+        }
+
+        @keyframes solar-pulse {
+            0% { box-shadow: 0 0 38px rgba(249, 115, 22, 0.7), 0 0 80px rgba(167, 139, 250, 0.4), inset 0 0 18px rgba(255,255,255,0.7); }
+            100% { box-shadow: 0 0 70px rgba(249, 115, 22, 0.9), 0 0 130px rgba(103, 232, 249, 0.45), inset 0 0 26px rgba(255,255,255,0.8); }
+        }
+
+        .ring-solar {
+            position: absolute; width: 380px; height: 380px;
+            border-radius: 50%; border: 2px solid rgba(249, 115, 22, 0.38);
+            border-left-color: transparent; border-right-color: rgba(103, 232, 249, 0.56);
+            transform: rotateX(72deg); animation: spin-3d 18s linear infinite;
+            box-shadow: 0 0 30px rgba(103, 232, 249, 0.12);
+        }
+
+        .ring-outer {
+            position: absolute; width: 460px; height: 460px;
+            border-radius: 50%; border: 1px solid rgba(103, 232, 249, 0.32);
+            box-shadow: inset 0 0 18px rgba(103, 232, 249, 0.12), 0 0 25px rgba(103, 232, 249, 0.12);
+            animation: spin-slow 24s linear infinite;
+        }
+
+        @keyframes spin-cloud { 0% { transform: rotateY(0deg) rotateX(18deg); } 100% { transform: rotateY(360deg) rotateX(18deg); } }
+        @keyframes spin-3d { 100% { transform: rotateX(72deg) rotateZ(360deg); } }
+        @keyframes spin-slow { 100% { transform: rotate(360deg); } }
+
+        .state-listening .core-orb {
+            box-shadow: 0 0 80px rgba(52, 211, 153, 0.9), inset 0 0 24px rgba(255,255,255,0.7);
+            background: radial-gradient(circle at 30% 30%, #dcfce7 0%, #4ade80 24%, #10b981 52%, rgba(16,185,129,0.6) 70%, rgba(2,6,23,0) 100%);
+        }
+
+        .state-thinking .core-orb {
+            box-shadow: 0 0 90px rgba(103, 232, 249, 0.8), inset 0 0 30px rgba(255,255,255,0.8);
+            animation: pulse-fast 0.45s infinite alternate;
+            background: radial-gradient(circle at 30% 30%, #f0fdfa 0%, #67e8f9 24%, #22d3ee 52%, rgba(34,211,238,0.6) 70%, rgba(2,6,23,0) 100%);
+        }
+
+        @keyframes pulse-fast { 0% { transform: scale(0.96); } 100% { transform: scale(1.12); } }
+
+        .talk-btn {
+            position: absolute; bottom: 118px; left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(250, 204, 21, 0.16), rgba(249, 115, 22, 0.18));
+            border: 1px solid rgba(251, 191, 36, 0.82);
+            color: #f8fafc;
+            padding: 16px 46px; font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem; letter-spacing: 0.2em; font-weight: 700; cursor: pointer;
+            box-shadow: 0 0 20px rgba(249,115,22,0.22), inset 0 0 16px rgba(251,191,36,0.08), 0 0 0 1px rgba(251,191,36,0.08);
+            transition: all 0.2s ease; z-index: 50; border-radius: 999px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .talk-btn:hover {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.94), rgba(249, 115, 22, 0.92));
+            color: #0f172a; box-shadow: 0 0 34px rgba(251,191,36,0.5), 0 0 50px rgba(249,115,22,0.42), inset 0 0 18px rgba(255,255,255,0.18);
+        }
+
+        .talk-btn:active, .talk-btn.recording {
+            background: linear-gradient(135deg, rgba(52,211,153,0.98), rgba(16,185,129,0.9));
+            border-color: rgba(52,211,153,0.9); color: #04141d;
+            box-shadow: 0 0 35px rgba(52,211,153,0.45), 0 0 50px rgba(52,211,153,0.3);
+            transform: translateX(-50%) scale(0.97);
+        }
+
+        .talk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .text-output-container {
+            position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+            width: min(980px, 76vw); min-height: 150px;
+            background: linear-gradient(180deg, rgba(12, 19, 31, 0.9), rgba(10, 15, 25, 0.96));
+            border: 1px solid rgba(103, 232, 249, 0.3);
+            border-top: 3px solid var(--gold);
+            padding: 14px 22px 16px;
+            box-shadow: 0 18px 42px rgba(2, 6, 23, 0.72), inset 0 0 16px rgba(103, 232, 249, 0.05), 0 0 0 1px rgba(251,191,36,0.08), 0 0 24px rgba(103,232,249,0.05);
+            display: flex; flex-direction: column; z-index: 20; border-radius: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .text-output-container {
+                height: 130px; bottom: 10px; width: min(92vw, 860px); padding: 10px 14px;
+            }
+            .response-text { font-size: 0.88em !important; }
+            .talk-btn { bottom: 148px; padding: 12px 24px; font-size: 0.75rem; }
+        }
+
+        .status-header {
+            font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            align-items: center;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .status-header span:last-child {
+            color: var(--accent); animation: blink 1s infinite;
+            font-weight: 700;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+        .response-text {
+            flex-grow: 1; overflow-y: auto; font-size: 1rem; line-height: 1.7; text-shadow: 0 0 10px rgba(251,191,36,0.12);
+            padding-right: 10px; color: #f8fafc;
+        }
+        .response-text::-webkit-scrollbar { width: 5px; }
+        .response-text::-webkit-scrollbar-track { background: rgba(148,163,184,0.08); }
+        .response-text::-webkit-scrollbar-thumb { background: rgba(103,232,249,0.5); border-radius: 999px; }
+
+        .interrupt-btn {
+            position: absolute; bottom: 120px; right: 26px;
+            background: rgba(251, 113, 133, 0.12); border: 1px solid rgba(251,113,133,0.8);
+            color: #fecdd3; padding: 12px 14px; font-family: 'Orbitron', sans-serif;
+            font-size: 0.72rem; letter-spacing: 0.16em; font-weight: 700; cursor: pointer;
+            box-shadow: 0 0 15px rgba(251, 113, 133, 0.15) inset;
+            transition: all 0.2s ease; z-index: 50; display: none; border-radius: 12px;
+            text-transform: uppercase;
+        }
+        @media (max-width: 768px) { .interrupt-btn { bottom: 150px; right: 12px; padding: 10px 12px; } }
+        .interrupt-btn:hover { background: rgba(251, 113, 133, 0.78); color: #fff; box-shadow: 0 0 18px rgba(251,113,133,0.4); }
+
+        #tts-debug { position: absolute; bottom: 2px; right: 8px; font-size: 0.64em; color: rgba(148,163,184,0.7); z-index: 99; letter-spacing: 0.12em; font-family: 'Orbitron', sans-serif; }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <div id="boot-screen">
+        <h1>[READY]</h1>
+        <p>Sentuh layar untuk mengaktifkan sistem ai</p>
+    </div>
+
+    <div class="hud-container">
+        <!-- Panels -->
+        <div class="panel panel-left">
+            <div class="panel-title">SYS.DIAGNOSTICS</div>
+            <div class="data-row"><span>MODE:</span> <span style="color:var(--cyan)">PUSH-TO-TALK</span></div>
+            <div class="data-row"><span>MIC_STATUS:</span> <span id="mic-status" style="color:var(--orange)">READY</span></div>
+            <div class="data-row"><span>CORE_LOAD:</span> <span id="cpu" style="color:var(--green)">14.2%</span></div>
+        </div>
+        <div class="panel panel-right">
+            <div class="panel-title">AI.LINK.STATUS</div>
+            <div class="data-row"><span>REACTOR:</span> <span style="color:var(--green)">STABLE</span></div>
+            <div class="data-row"><span>CLUSTER:</span> <span style="color:var(--orange)">LAMBAN-AI</span></div>
+        </div>
+
+        <!-- 3D SOLAR CORE VISUALIZER -->
+        <div class="jarvis-core-container" id="core-visualizer">
+            <div class="ring-outer"></div>
+            <div class="ring-solar"></div>
+            <div class="solar-flare-cloud" id="solar-cloud"></div>
+            <div class="core-orb" id="core-orb">
+                <span class="core-text">
+                    <span class="brand">JARVIS</span>
+                    <span class="sigil">A.I.</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Tombol Interaksi Manual -->
+        <button class="talk-btn" id="talk-btn">TEKAN UNTUK BICARA</button>
+        <button class="interrupt-btn" id="interrupt-btn">STOP AI</button>
+
+        <!-- Text Output -->
+        <div class="text-output-container">
+            <div class="status-header">
+                <span id="ai-status">SYSTEM STANDBY</span>
+                <span>_</span>
+            </div>
+            <div class="response-text" id="ai-response">
+                Tekan tombol 'Tekan Untuk Bicara' di atas untuk menyalurkan suara ke Reaktor Z.I.E.
+            </div>
+        </div>
+
+        <div id="tts-debug">[ TTS: STANDBY ]</div>
+    </div>
+
+    <script>
+        const bootScreen = document.getElementById('boot-screen');
+        const aiResponse = document.getElementById('ai-response');
+        const aiStatus = document.getElementById('ai-status');
+        const micStatus = document.getElementById('mic-status');
+        const talkBtn = document.getElementById('talk-btn');
+        const interruptBtn = document.getElementById('interrupt-btn');
+        const ttsDebug = document.getElementById('tts-debug');
+        
+        const coreVisualizer = document.getElementById('core-visualizer');
+        const solarCloud = document.getElementById('solar-cloud');
+        const coreOrb = document.getElementById('core-orb');
+
+        let isSystemActive = false;
+        let isAiSpeaking = false;
+        let currentState = 'STANDBY';
+
+        // --- SESSION ID GENERATOR UNTUK MULTI-USER ---
+        function getSessionId() {
+            let sessionId = sessionStorage.getItem('lamban_session_id');
+            if (!sessionId) {
+                sessionId = 'user_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
+                sessionStorage.setItem('lamban_session_id', sessionId);
+            }
+            return sessionId;
+        }
+
+        // --- 1. GENERATE 3D SOLAR FLARE PARTICLES ---
+        const numParticles = 90; 
+        const particles = [];
+        
+        for (let i = 0; i < numParticles; i++) {
+            const p = document.createElement('div');
+            p.className = 'solar-particle';
+            const theta = Math.random() * 2 * Math.PI;
+            const phi = Math.acos(Math.random() * 2 - 1);
+            const radius = 65 + Math.random() * 85; 
+            
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.sin(phi) * Math.sin(theta);
+            const z = radius * Math.cos(phi);
+            
+            p.style.transform = `translate3d(${x}px, ${y}px,${z}px)`;
+            solarCloud.appendChild(p);
+            particles.push({ el: p, base_x: x, base_y: y, base_z: z, radius: radius });
+        }
+
+        // --- 2. ANIMATION CORE ---
+        function animateSolarCore() {
+            requestAnimationFrame(animateSolarCore);
+            
+            let time = Date.now() / 150;
+            let sum = 0;
+            
+            if (currentState === 'LISTENING') {
+                let wave = Math.abs(Math.sin(time * 1.5)); 
+                let scale = 1 + (wave * 0.15); 
+                coreOrb.style.transform = `scale(${Math.min(scale, 1.3)})`;
+
+                particles.forEach((p, index) => {
+                    let pWave = Math.abs(Math.sin(time + (index * 0.1)));
+                    let expand = 1 + (pWave * 0.5);
+                    p.el.style.transform = `translate3d(${p.base_x * expand}px,${p.base_y * expand}px, ${p.base_z * expand}px) scale(${expand})`;
+                    p.el.style.background = pWave > 0.6 ? '#fff' : 'var(--green)';
+                });
+            } else if (currentState === 'RESPONDING' || currentState === 'THINKING') {
+                particles.forEach((p, index) => {
+                    let wave = Math.abs(Math.sin(time + (index * 0.1)));
+                    let expand = 1 + (wave * 0.6);
+                    p.el.style.transform = `translate3d(${p.base_x * expand}px,${p.base_y * expand}px, ${p.base_z * expand}px) scale(${1 + wave})`;
+                    p.el.style.background = wave > 0.7 ? '#fff' : (currentState === 'THINKING' ? 'var(--cyan)' : 'var(--orange)');
+                    sum += wave;
+                });
+                coreOrb.style.transform = `scale(${1 + (sum / numParticles * 0.25)})`;
+            } else {
+                particles.forEach(p => {
+                    p.el.style.transform = `translate3d(${p.base_x}px, ${p.base_y}px,${p.base_z}px) scale(1)`;
+                    p.el.style.background = 'var(--gold)';
+                });
+                coreOrb.style.transform = `scale(1)`;
+            }
+        }
+        animateSolarCore(); 
+
+        // --- 3. SPEECH RECOGNITION ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'id-ID';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        // --- 4. TUNING SUARA (SMOOTH SETTINGS) ---
+        const synth = window.speechSynthesis;
+        let cachedVoices = [];
+
+        function loadVoices() {
+            cachedVoices = synth.getVoices();
+        }
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        function getBestVoice() {
+            const voices = cachedVoices.length ? cachedVoices : synth.getVoices();
+            // Prioritaskan voice Natural, Online, Google, atau Wavenet
+            let premiumVoice = voices.find(v => v.lang.includes('id') && (v.name.includes('Online') || v.name.includes('Wavenet') || v.name.includes('Natural') || v.name.includes('Google')));
+            if (premiumVoice) return premiumVoice;
+            
+            let femaleVoice = voices.find(v => v.lang.includes('id') && (v.name.includes('Female') || v.name.includes('Gadis')));
+            if (femaleVoice) return femaleVoice;
+
+            return voices.find(v => v.lang.includes('id')) || voices[0];
+        }
+
+        function updateState(state) {
+            currentState = state;
+            aiStatus.innerText = state;
+            coreVisualizer.className = 'jarvis-core-container'; 
+            
+            if (state === 'LISTENING') {
+                coreVisualizer.classList.add('state-listening');
+                micStatus.innerText = "RECORDING";
+                micStatus.style.color = "var(--green)";
+                talkBtn.innerText = "MENDENGARKAN...";
+                talkBtn.classList.add('recording');
+                talkBtn.disabled = false;
+                interruptBtn.style.display = "none";
+            } else if (state === 'THINKING') {
+                coreVisualizer.classList.add('state-thinking');
+                micStatus.innerText = "SYNC";
+                micStatus.style.color = "var(--cyan)";
+                talkBtn.innerText = "MEMPROSES...";
+                talkBtn.classList.remove('recording');
+                talkBtn.disabled = true;
+                interruptBtn.style.display = "none";
+            } else if (state === 'RESPONDING') {
+                talkBtn.innerText = "TEKAN UNTUK BICARA";
+                talkBtn.classList.remove('recording');
+                talkBtn.disabled = false;
+                interruptBtn.style.display = "block";
+            } else {
+                micStatus.innerText = "READY";
+                micStatus.style.color = "var(--orange)";
+                talkBtn.innerText = "TEKAN UNTUK BICARA";
+                talkBtn.classList.remove('recording');
+                talkBtn.disabled = false;
+                interruptBtn.style.display = "none";
+            }
+        }
+
+        // --- PUSH-TO-TALK EVENTS ---
+        talkBtn.addEventListener('click', () => {
+            if (!isSystemActive || currentState === 'THINKING') return;
+            
+            if (isAiSpeaking) {
+                synth.cancel(); 
+                isAiSpeaking = false;
+            }
+            try {
+                recognition.stop(); 
+                setTimeout(() => { recognition.start(); updateState('LISTENING'); }, 100);
+            } catch(e) { console.log(e); }
+        });
+
+        interruptBtn.addEventListener('click', () => {
+            if (isAiSpeaking) {
+                synth.cancel();
+                isAiSpeaking = false;
+                ttsDebug.innerText = "[ TTS: DIHENTIKAN ]";
+                updateState('STANDBY');
+            }
+        });
+
+        // --- BOOT SISTEM ---
+        bootScreen.addEventListener('click', () => {
+            bootScreen.style.opacity = '0';
+            setTimeout(() => { bootScreen.style.display = 'none'; }, 500);
+            
+            isSystemActive = true;
+            synth.resume(); 
+            synth.cancel(); 
+            
+            const unlockAudio = new SpeechSynthesisUtterance('JARVIS BELAJAR siap.'); 
+            const voice = getBestVoice();
+            if (voice) unlockAudio.voice = voice;
+            
+            // Pengaturan parameter smooth
+            unlockAudio.pitch = 1.0; 
+            unlockAudio.rate = 0.9; 
+            unlockAudio.volume = 1; 
+            synth.speak(unlockAudio);
+
+            aiResponse.innerHTML = "<span style='color:var(--orange)'>Sistem LAMBAN.AI (Push-to-Talk) Aktif. Session ID: " + getSessionId() + "</span>";
+            updateState('STANDBY');
+        });
+
+        // --- KIRIM SUARA KE N8N ---
+        recognition.onresult = async (event) => {
+            const transcript = event.results[0][0].transcript;
+            updateState('THINKING');
+            aiResponse.innerHTML = `<span style="color:#fff">User:</span> ${transcript}<br><br><span style="color:var(--cyan); opacity:0.5;">Memproses energi surya ke kluster...</span>`;
+
+            try {
+                const n8nWebhookUrl = 'http://localhost:5678/webhook-test/jarvis-chat';
+                
+                const response = await fetch(n8nWebhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: transcript,
+                        chatInput: transcript,
+                        session_id: getSessionId()
+                    })
+                });
+
+                if (!response.ok) throw new Error("Gagal menghubungi server kluster.");
+
+                const data = await response.json();
+                let aiText = data.reply || data.output || "Reaktor tidak memberikan respons.";
+                
+                const cleanText = aiText.replace(/[*#_`~()><\-]/g, ' ');
+
+                updateState('RESPONDING');
+                aiResponse.innerHTML = `<span style="color:#fff">User:</span> ${transcript}<br><br><span style="color:var(--orange)">.LAMBAN.-AI:</span><br>${cleanText.replace(/\n/g, '<br>')}`;
+                aiResponse.scrollTop = aiResponse.scrollHeight;
+
+                speakText(cleanText);
+
+            } catch (error) {
+                aiResponse.innerHTML += `<br><br><span style="color:red">Error: ${error.message}</span>`;
+                updateState('STANDBY');
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.error("Speech Rec error:", event.error);
+            updateState('STANDBY');
+        };
+
+        // --- PEMBACA SUARA (SMOOTH TUNING) ---
+        function speakText(text) {
+            isAiSpeaking = true;
+            synth.resume(); 
+            synth.cancel(); 
+
+            const chunks = text.match(/[^.!?]+[.!?]+|\s*[^.!?]+$/g) || [text];
+            let index = 0;
+
+            function speakNextChunk() {
+                if (index >= chunks.length) {
+                    isAiSpeaking = false;
+                    ttsDebug.innerText = "[ TTS: SELESAI ]";
+                    updateState('STANDBY');
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(chunks[index]);
+                const voice = getBestVoice();
+                if (voice) utterance.voice = voice;
+                
+                // Konfigurasi nada halus & tempo tenang
+                utterance.pitch = 1.0;  // Pitch standar (natural)
+                utterance.rate = 0.9;   // Kecepatan sedikit diperlambat agar artikulasi lebih jernih
+                utterance.volume = 1; 
+
+                utterance.onstart = () => {
+                    ttsDebug.innerText = `[ TTS: ${index+1}/${chunks.length} ]`;
+                    ttsDebug.style.color = "var(--green)";
+                };
+
+                utterance.onend = () => { index++; speakNextChunk(); };
+                utterance.onerror = () => { index++; speakNextChunk(); };
+
+                synth.speak(utterance);
+            }
+            speakNextChunk();
+        }
+
+        setInterval(() => {
+            if(isSystemActive) {
+                const cpuEl = document.getElementById('cpu');
+                if (cpuEl) cpuEl.innerText = (Math.random() * 5 + 12).toFixed(1) + '%';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
