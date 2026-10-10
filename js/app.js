@@ -386,6 +386,7 @@ recognition.onerror = (e) => {
 // ============================================================
 const synth = window.speechSynthesis;
 let cachedVoices = [];
+let speechGeneration = 0;
 
 function loadVoices() {
     cachedVoices = synth.getVoices();
@@ -407,6 +408,7 @@ function getBestVoice() {
 }
 
 function speakText(text) {
+    const generation = ++speechGeneration;
     isAiSpeaking = true;
     synth.resume();
     synth.cancel();
@@ -415,6 +417,8 @@ function speakText(text) {
     let index = 0;
 
     function speakNext() {
+        if (generation !== speechGeneration || !isAiSpeaking) return;
+
         if (index >= chunks.length) {
             isAiSpeaking = false;
             el.ttsInfo.textContent = '[ TTS: SELESAI ]';
@@ -430,10 +434,19 @@ function speakText(text) {
         utt.volume = CONFIG.ttsVolume;
 
         utt.onstart = () => {
+            if (generation !== speechGeneration) return;
             el.ttsInfo.textContent = `[ TTS ${index + 1}/${chunks.length} ]`;
         };
-        utt.onend   = () => { index++; speakNext(); };
-        utt.onerror = () => { index++; speakNext(); };
+        utt.onend   = () => {
+            if (generation !== speechGeneration) return;
+            index++;
+            speakNext();
+        };
+        utt.onerror = () => {
+            if (generation !== speechGeneration) return;
+            index++;
+            speakNext();
+        };
 
         synth.speak(utt);
     }
@@ -453,7 +466,7 @@ el.boot.addEventListener('click', () => {
     // Unlock audio context
     synth.resume();
     synth.cancel();
-    const welcome = new SpeechSynthesisUtterance('Hafiz AI siap membantu belajar.');
+    const welcome = new SpeechSynthesisUtterance('JARVIS AI siap membantu belajar.');
     const voice = getBestVoice();
     if (voice) welcome.voice = voice;
     welcome.pitch  = CONFIG.ttsPitch;
@@ -473,6 +486,7 @@ el.boot.addEventListener('click', () => {
 el.talkBtn.addEventListener('click', () => {
     if (!isSystemActive || currentState === State.THINKING) return;
     if (isAiSpeaking) {
+        speechGeneration++;
         synth.cancel();
         isAiSpeaking = false;
     }
@@ -490,6 +504,7 @@ el.talkBtn.addEventListener('click', () => {
 // Stop button
 el.stopBtn.addEventListener('click', () => {
     if (!isAiSpeaking) return;
+    speechGeneration++;
     synth.cancel();
     isAiSpeaking = false;
     el.ttsInfo.textContent = '[ TTS: DIHENTIKAN ]';
@@ -526,6 +541,15 @@ window.toggleSection = function(header) {
     }
 };
 
+window.toggleChat = function(header) {
+    const content = document.getElementById('chat-content');
+    const chevron = header.querySelector('.chevron');
+    const isExpanded = header.getAttribute('aria-expanded') === 'true';
+
+    content.hidden = isExpanded;
+    header.setAttribute('aria-expanded', String(!isExpanded));
+    chevron.style.transform = isExpanded ? 'rotate(-90deg)' : 'rotate(0deg)';
+};
 
 window.toggleSection = function(header) {
     const content = header.nextElementSibling;
@@ -539,4 +563,3 @@ window.toggleSection = function(header) {
         chevron.style.transform = "rotate(-90deg)";
     }
 };
-

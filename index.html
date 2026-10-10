@@ -24,7 +24,7 @@
                 </svg>
             </div>
         </div>
-        <h1 class="boot-title">HAFIZ AI</h1>
+        <h1 class="boot-title">JARVIS AI</h1>
         <p class="boot-sub">Asisten Belajar Cerdas &mdash; v2.0</p>
     </div>
     <div class="boot-divider"></div>
@@ -116,32 +116,41 @@
                 <div class="geo-stage-inner" id="geo-stage-inner"></div>
             </div>
             <div class="geo-label">
-                <span class="geo-label-name">HAFIZ</span>
+                <span class="geo-label-name">JARVIS</span>
                 <span class="geo-label-tag">A.I.</span>
             </div>
         </div>
 
         <!-- Chat area -->
         <div class="chat-area">
-
-            <!-- Status bar -->
-            <div class="status-bar">
-                <div class="status-indicator">
-                    <div class="status-dot"></div>
-                    <span id="ai-status">STANDBY</span>
-                </div>
-                <span class="tts-info" id="tts-info">[ TTS: STANDBY ]</span>
+            <div class="panel-header chat-header" role="button" tabindex="0"
+                 aria-expanded="true" onclick="toggleChat(this)"
+                 onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleChat(this); }">
+                <div class="panel-header-dot"></div>
+                <span class="panel-title">CHAT / CONVERSATION</span>
+                <span class="chevron">&#9660;</span>
             </div>
 
-            <!-- Chat bubbles box -->
-            <div class="chat-box" id="chat-box">
-                <div class="chat-placeholder" id="chat-placeholder">
-                    <div class="chat-placeholder-icon">🎙️</div>
-                    <p>Tekan tombol di bawah,<br>lalu bicara untuk memulai percakapan.</p>
+            <div class="chat-content" id="chat-content">
+                <!-- Status bar -->
+                <div class="status-bar">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span id="ai-status">STANDBY</span>
+                    </div>
+                    <span class="tts-info" id="tts-info">[ TTS: STANDBY ]</span>
+                </div>
+
+                <!-- Chat bubbles box -->
+                <div class="chat-box" id="chat-box">
+                    <div class="chat-placeholder" id="chat-placeholder">
+                        <div class="chat-placeholder-icon">🎙️</div>
+                        <p>Tekan tombol di bawah,<br>lalu bicara untuk memulai percakapan.</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Controls -->
+            <!-- Controls stay visible when chat history is collapsed -->
             <div class="control-bar">
                 <button class="btn-talk" id="talk-btn">
                     <div class="mic-ring">
