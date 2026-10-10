@@ -8,7 +8,7 @@
 // CONFIG
 // ============================================================
 const CONFIG = {
-    webhookUrl:    'http://localhost:5678/webhook-test/jarvis-chat',
+    webhookUrl:    'http://localhost:5678/webhook/jarvis-chat',
     sessionKey:    'hafiz_session_id',
     numParticles:  80,
     ttsRate:       0.9,
@@ -155,9 +155,11 @@ function setState(state) {
     currentState = state;
 
     // Drive all CSS state visuals via a single data-state class
-    el.app.className = state === State.STANDBY
-        ? ''
-        : `state-${state.toLowerCase()}`;
+    let baseClass = state === State.STANDBY ? '' : `state-${state.toLowerCase()}`;
+    if (isSystemActive) {
+        baseClass = `system-active ${baseClass}`;
+    }
+    el.app.className = baseClass.trim();
 
     el.aiStatus.textContent = state;
 
@@ -273,6 +275,56 @@ function renderErrorBubble(msg) {
 }
 
 // ============================================================
+// IOT DEVICE MANAGER
+// ============================================================
+window.setDeviceStatus = function(deviceId, isOn) {
+    const badge = document.getElementById(`device-${deviceId}`);
+    if (!badge) return;
+
+    const active = ['true', 'on', '1'].includes(
+        String(isOn).toLowerCase()
+    );
+
+    badge.className = active ? 'badge badge-green' : 'badge badge-off';
+    badge.textContent = active ? 'ON' : 'OFF';
+};
+
+const ESP32_STATUS_URL =
+    'http://172.20.10.3/api?endpoint=status';
+
+const deviceMapping = {
+    ac: 'led_1',
+    tv: 'led_2',
+    lampu: 'led_3',
+    radio: 'led_4',
+    mesincuci: 'led_5',
+    kulkas: 'led_6'
+};
+
+async function syncDeviceStatuses() {
+    try {
+        const response = await fetch(ESP32_STATUS_URL, {
+            cache: 'no-store'
+        });
+
+        if (!response.ok) throw new Error('Gagal membaca status LED');
+
+        const statuses = await response.json();
+
+        Object.entries(deviceMapping).forEach(([device, led]) => {
+            if (statuses[led] !== undefined) {
+                window.setDeviceStatus(device, statuses[led]);
+            }
+        });
+    } catch (error) {
+        console.error('Sinkronisasi ESP32 gagal:', error);
+    }
+}
+
+syncDeviceStatuses();
+setInterval(syncDeviceStatuses, 2000);
+
+// ============================================================
 // SPEECH RECOGNITION
 // ============================================================
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -304,6 +356,13 @@ recognition.onresult = async (event) => {
         const data   = await response.json();
         const raw    = data.reply || data.output || 'Reaktor tidak memberikan respons.';
         const cleaned = raw.replace(/[*#_`~<>\\]/g, ' ').trim();
+
+        // ── UPDATE IOT DEVICES IF PROVIDED IN RESPONSE ──
+        if (data.devices && typeof data.devices === 'object') {
+            Object.entries(data.devices).forEach(([dev, status]) => {
+                window.setDeviceStatus(dev, status);
+            });
+        }
 
         removeThinkingBubble();
         renderAiBubble(cleaned);
@@ -450,3 +509,34 @@ setInterval(() => {
 // INIT
 // ============================================================
 buildGeometry();
+
+// ============================================================
+// PANEL TOGGLE
+// ============================================================
+window.toggleSection = function(header) {
+    const content = header.nextElementSibling;
+    const chevron = header.querySelector(".chevron");
+    
+    if (content.style.display === "none") {
+        content.style.display = "block";
+        chevron.style.transform = "rotate(0deg)";
+    } else {
+        content.style.display = "none";
+        chevron.style.transform = "rotate(-90deg)";
+    }
+};
+
+
+window.toggleSection = function(header) {
+    const content = header.nextElementSibling;
+    const chevron = header.querySelector(".chevron");
+    
+    if (window.getComputedStyle(content).display === "none") {
+        content.style.display = "block";
+        chevron.style.transform = "rotate(0deg)";
+    } else {
+        content.style.display = "none";
+        chevron.style.transform = "rotate(-90deg)";
+    }
+};
+

@@ -244,10 +244,22 @@ body::after {
     display: flex;
     flex-direction: column;
     gap: 0;
-    transition: border-color 0.3s ease;
     align-self: start;
     margin-top: 8px;
+    
+    /* Hidden by default */
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: opacity 0.8s ease, transform 0.8s ease, border-color 0.3s ease;
 }
+
+#app.system-active .panel {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
 
 .panel:hover {
     border-color: rgba(148,163,184,0.22);
@@ -336,6 +348,8 @@ body::after {
 .badge-orange::before { background: var(--c-orange); box-shadow: 0 0 6px var(--c-orange); }
 .badge-blue   { color: var(--c-blue);   background: rgba(56,189,248,0.1);  border: 1px solid rgba(56,189,248,0.25); }
 .badge-blue::before   { background: var(--c-blue);   box-shadow: 0 0 6px var(--c-blue); }
+.badge-off    { color: var(--c-muted);  background: rgba(100,116,139,0.1); border: 1px solid rgba(100,116,139,0.2); }
+.badge-off::before    { background: var(--c-muted);  box-shadow: none; }
 
 /* ============================================================
    CENTER COLUMN
@@ -948,5 +962,35 @@ body::after {
 
     .chat-box { min-height: 160px; }
     .btn-talk { font-size: 0.65rem; padding: 11px 16px; }
+}
+
+
+/* Accordion styles */
+.panel-header {
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.2s;
+}
+.panel-header:hover {
+    opacity: 0.8;
+}
+.chevron {
+    margin-left: auto;
+    font-size: 0.6rem;
+    color: var(--c-muted);
+    transition: transform 0.3s ease;
+}
+.panel-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+.chevron {
+    transform: rotate(-90deg);
 }
 
