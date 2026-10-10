@@ -63,76 +63,89 @@ function getSessionId() {
 }
 
 // ============================================================
-// PARTICLE SYSTEM
+// ICOSAHEDRON GEOMETRY BUILDER
 // ============================================================
-const particleCloud = document.getElementById('particle-cloud');
-const particles = [];
 
-function initParticles() {
-    for (let i = 0; i < CONFIG.numParticles; i++) {
-        const node   = document.createElement('div');
-        node.className = 'particle';
-
-        const theta  = Math.random() * 2 * Math.PI;
-        const phi    = Math.acos(Math.random() * 2 - 1);
-        const radius = 55 + Math.random() * 65;
-
-        const x = radius * Math.sin(phi) * Math.cos(theta);
-        const y = radius * Math.sin(phi) * Math.sin(theta);
-        const z = radius * Math.cos(phi);
-
-        node.style.transform = `translate3d(${x}px,${y}px,${z}px)`;
-        particleCloud.appendChild(node);
-        particles.push({ node, x, y, z });
-    }
+/**
+ * Returns the 12 vertices of a unit icosahedron scaled by `r`.
+ * Golden ratio φ = (1 + √5) / 2
+ */
+function buildIcosahedronVertices(r) {
+    const phi = (1 + Math.sqrt(5)) / 2;
+    const pts = [
+        [-1,  phi,  0], [ 1,  phi,  0], [-1, -phi,  0], [ 1, -phi,  0],
+        [ 0, -1,  phi], [ 0,  1,  phi], [ 0, -1, -phi], [ 0,  1, -phi],
+        [ phi,  0, -1], [ phi,  0,  1], [-phi,  0, -1], [-phi,  0,  1],
+    ];
+    const len = Math.sqrt(1 + phi * phi);
+    return pts.map(([x, y, z]) => [x / len * r, y / len * r, z / len * r]);
 }
 
-// ============================================================
-// ANIMATION LOOP
-// ============================================================
-const coreOrb = document.getElementById('core-orb');
+/**
+ * 20 triangular faces of an icosahedron (vertex index triples).
+ */
+const ICO_FACES = [
+    [0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],
+    [1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],
+    [3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],
+    [4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1],
+];
 
-function startAnimationLoop() {
-    function tick() {
-        requestAnimationFrame(tick);
-        const t   = Date.now() / 150;
-        let total = 0;
+function buildGeometry() {
+    const stage = document.getElementById('geo-stage-inner');
+    stage.innerHTML = '';
 
-        particles.forEach((p, i) => {
-            const wave = Math.abs(Math.sin(t + i * 0.11));
-            let expand = 1;
-            let color  = 'var(--c-gold)';
+    const R = 85; // radius in px
+    const verts = buildIcosahedronVertices(R);
 
-            switch (currentState) {
-                case State.LISTENING:
-                    expand = 1 + wave * 0.55;
-                    color  = wave > 0.65 ? '#fff' : 'var(--c-green)';
-                    break;
-                case State.THINKING:
-                    expand = 1 + wave * 0.62;
-                    color  = wave > 0.7 ? '#fff' : 'var(--c-blue)';
-                    total += wave;
-                    break;
-                case State.RESPONDING:
-                    expand = 1 + wave * 0.58;
-                    color  = wave > 0.7 ? '#fff' : 'var(--c-orange)';
-                    total += wave;
-                    break;
-            }
+    // Determine size of the SVG viewport — faces span roughly 2*R
+    const svgSize = R * 2.4;
+    const half = svgSize / 2;
 
-            p.node.style.transform = `translate3d(${p.x*expand}px,${p.y*expand}px,${p.z*expand}px) scale(${expand})`;
-            p.node.style.background = color;
-        });
+    // Render each face as an SVG polygon + vertex dots
+    ICO_FACES.forEach(([ai, bi, ci]) => {
+        const [ax, ay, az] = verts[ai];
+        const [bx, by, bz] = verts[bi];
+        const [cx, cy, cz] = verts[ci];
 
-        if (currentState === State.THINKING || currentState === State.RESPONDING) {
-            coreOrb.style.transform = `scale(${1 + (total / CONFIG.numParticles) * 0.2})`;
-        } else if (currentState === State.LISTENING) {
-            coreOrb.style.transform = `scale(${Math.min(1 + Math.abs(Math.sin(t * 1.4)) * 0.13, 1.25)})`;
-        } else {
-            coreOrb.style.transform = 'scale(1)';
-        }
-    }
-    tick();
+        // Centre of the triangle face (for positioning the div)
+        const mx = (ax + bx + cx) / 3;
+        const my = (ay + by + cy) / 3;
+        const mz = (az + bz + cz) / 3;
+
+        const face = document.createElement('div');
+        face.className = 'geo-face';
+
+        // Push face outward to its centroid position in 3D space
+        face.style.transform = `translate3d(${mx}px, ${my}px, ${mz}px)`;
+
+        // SVG triangle: vertices relative to the face origin
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', svgSize);
+        svg.setAttribute('height', svgSize);
+        svg.setAttribute('viewBox', `${-half} ${-half} ${svgSize} ${svgSize}`);
+
+        const poly = document.createElementNS(ns, 'polygon');
+        // Offset each vertex relative to the face centroid
+        const pts = [
+            [ax - mx, ay - my],
+            [bx - mx, by - my],
+            [cx - mx, cy - my],
+        ].map(([x, y]) => `${x},${y}`).join(' ');
+        poly.setAttribute('points', pts);
+        svg.appendChild(poly);
+        face.appendChild(svg);
+        stage.appendChild(face);
+    });
+
+    // Render a glowing dot at each unique vertex
+    verts.forEach(([x, y, z]) => {
+        const dot = document.createElement('div');
+        dot.className = 'geo-vertex';
+        dot.style.transform = `translate3d(${x}px, ${y}px, ${z}px) translate(-50%, -50%)`;
+        stage.appendChild(dot);
+    });
 }
 
 // ============================================================
@@ -141,11 +154,10 @@ function startAnimationLoop() {
 function setState(state) {
     currentState = state;
 
-    // Update app class for CSS-driven orb transitions
-    el.app.dataset.state = state;
-    el.app.className = state !== State.STANDBY && state !== State.RESPONDING
-        ? `state-${state.toLowerCase()}`
-        : '';
+    // Drive all CSS state visuals via a single data-state class
+    el.app.className = state === State.STANDBY
+        ? ''
+        : `state-${state.toLowerCase()}`;
 
     el.aiStatus.textContent = state;
 
@@ -437,6 +449,4 @@ setInterval(() => {
 // ============================================================
 // INIT
 // ============================================================
-initParticles();
-startAnimationLoop();
-
+buildGeometry();
