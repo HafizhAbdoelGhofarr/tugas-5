@@ -1,5 +1,5 @@
 /* ============================================================
-   app.js — HAFIZ AI Push-to-Talk
+   app.js — JARVIS AI Push-to-Talk
    ============================================================ */
 
 'use strict';
@@ -9,7 +9,7 @@
 // ============================================================
 const CONFIG = {
     webhookUrl:    'http://localhost:5678/webhook/jarvis-chat',
-    sessionKey:    'hafiz_session_id',
+    sessionKey:    'jarvis_session_id',
     numParticles:  80,
     ttsRate:       0.9,
     ttsPitch:      1.0,
